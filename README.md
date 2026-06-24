@@ -13,10 +13,10 @@ transmissao direcional.
 ## O que o projeto gera
 
 - Geometrias 3D para ULA, UCA, UPA e arranjo cilindrico.
-- Vetor diretor usando a formulacao do enunciado.
+- Vetor diretor usando a formulação do enunciado.
 - Beampatterns normalizados em dB.
 - Beamformer convencional Delay-and-Sum.
-- Experimento de transmissao direcional com ULA transmissora e receptora.
+- Experimento de transmissão direcional com ULA transmissora e receptora.
 - Figuras e tabelas usadas no artigo.
 - Artigo tecnico em `article/paper.pdf`.
 
@@ -45,14 +45,14 @@ Projeto_Arranjos/
 |-- README.md
 ```
 
-## Dependencias
+## Dependências
 
 - Python 3.11 ou superior.
 - `numpy`
 - `matplotlib`
 - MiKTeX ou outra distribuicao LaTeX com `pdflatex` e `IEEEtran`.
 
-Instalacao recomendada:
+Instalação recomendada:
 
 ```powershell
 python -m venv .venv
@@ -73,7 +73,7 @@ Gerar tudo e compilar o artigo:
 .\.venv\Scripts\python main.py --compile-paper
 ```
 
-Se `latexmk` nao estiver disponivel, compile diretamente com:
+Se `latexmk` não estiver disponível, compile diretamente com:
 
 ```powershell
 cd article
@@ -94,17 +94,17 @@ Exemplos independentes:
 .\.venv\Scripts\python examples\run_transmission_sweep.py
 ```
 
-## Observacoes de modelagem
+## Observações de modelagem
 
-A ULA foi posicionada por padrao no eixo `z`. Com a convencao do enunciado
+A ULA foi posicionada por padrão no eixo `z`. Com a convencao do enunciado
 `u = [cos(theta)cos(phi), cos(theta)sin(phi), sin(theta)]`, isso faz com que
-`theta = 0` represente o apontamento broadside no corte de elevacao usado nos
-graficos ULA e na transmissao com `theta_T = 20 graus`.
+`theta = 0` represente o apontamento broadside no corte de elevação usado nos
+gráficos ULA e na transmissão com `theta_T = 20 graus`.
 
 A UPA foi posicionada no plano `xz`, usando `x` como eixo horizontal e `z`
 como eixo vertical.
 
-Para UCA, UPA e arranjo cilindrico, os graficos direcionais usam pesos
-Delay-and-Sum apontados para uma direcao de referencia. Essa escolha permite
+Para UCA, UPA e arranjo cilíndrico, os gráficos direcionais usam pesos
+Delay-and-Sum apontados para uma direção de referência. Essa escolha permite
 identificar lobulo principal, lobulos secundarios e largura de feixe nos cortes
 solicitados.
