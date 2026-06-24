@@ -6,9 +6,9 @@ transmissao direcional.
 
 ## Integrantes
 
-- Gabriel Florencio da Fonseca
-- Pedro Nicollas Pereira Azevedo Della Torre Bastos
-- Ricardo Alexandre Vieira da Silva
+- [Gabriel Florencio da Fonseca](https://github.com/florencio300)
+- [Pedro Nicollas Pereira Azevedo Della Torre Bastos](https://github.com/Pogeu)
+- [Ricardo Alexandre Vieira da Silva](https://github.com/RicardoV1e1r4)
 
 ## O que o projeto gera
 
