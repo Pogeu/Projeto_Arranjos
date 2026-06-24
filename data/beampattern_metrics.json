@@ -1,0 +1,72 @@
+[
+  {
+    "array": "ULA",
+    "config": "M=9",
+    "main_angle_deg": 0.0,
+    "beamwidth_deg": 11.340156446402816,
+    "sidelobe_db": -12.896056329271453
+  },
+  {
+    "array": "ULA",
+    "config": "M=16",
+    "main_angle_deg": 0.0,
+    "beamwidth_deg": 6.34782175778286,
+    "sidelobe_db": -13.146962331353668
+  },
+  {
+    "array": "UCA",
+    "config": "M=9",
+    "main_angle_deg": 90.0,
+    "beamwidth_deg": 20.536659801504456,
+    "sidelobe_db": -3.690708938879712
+  },
+  {
+    "array": "UCA",
+    "config": "M=16",
+    "main_angle_deg": 90.0,
+    "beamwidth_deg": 20.53665980150444,
+    "sidelobe_db": -7.899500988450487
+  },
+  {
+    "array": "UPA",
+    "config": "3x3",
+    "main_angle_deg": 0.0,
+    "beamwidth_deg": 36.12201489641997,
+    "sidelobe_db": -9.54242509439325
+  },
+  {
+    "array": "UPA",
+    "config": "4x4",
+    "main_angle_deg": 0.0,
+    "beamwidth_deg": 26.26908347603702,
+    "sidelobe_db": -11.303475521585806
+  },
+  {
+    "array": "Cilindrico",
+    "config": "Mc=9, Nz=4",
+    "main_angle_deg": 90.0,
+    "beamwidth_deg": 20.51120864479472,
+    "sidelobe_db": -3.690708938879712
+  },
+  {
+    "array": "Cilindrico",
+    "config": "Mc=9, Nz=6",
+    "main_angle_deg": 90.0,
+    "beamwidth_deg": 20.51120864479475,
+    "sidelobe_db": -3.6907089388796974
+  },
+  {
+    "array": "Cilindrico",
+    "config": "Mc=16, Nz=4",
+    "main_angle_deg": 90.0,
+    "beamwidth_deg": 20.511208644794706,
+    "sidelobe_db": -7.910566100290987
+  },
+  {
+    "array": "Cilindrico",
+    "config": "Mc=16, Nz=6",
+    "main_angle_deg": 90.0,
+    "beamwidth_deg": 20.51120864479475,
+    "sidelobe_db": -7.910566100290972
+  }
+]

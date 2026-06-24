@@ -1,0 +1,26 @@
+{
+  "ULA 16": {
+    "sensors": 16,
+    "x_span": 0.0,
+    "y_span": 0.0,
+    "z_span": 7.5
+  },
+  "UCA 16": {
+    "sensors": 16,
+    "x_span": 2.0,
+    "y_span": 2.0,
+    "z_span": 0.0
+  },
+  "UPA 4x4": {
+    "sensors": 16,
+    "x_span": 1.5,
+    "y_span": 0.0,
+    "z_span": 1.5
+  },
+  "Cilindrico 16x6": {
+    "sensors": 96,
+    "x_span": 2.0,
+    "y_span": 2.0,
+    "z_span": 2.5
+  }
+}

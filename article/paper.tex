@@ -1,0 +1,294 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage{url}
+
+\title{Modelagem e Analise de Arranjos de Sensores}
+
+\author{
+\IEEEauthorblockN{Gabriel Florencio da Fonseca, Pedro Nicollas Pereira Azevedo Della Torre Bastos, Ricardo Alexandre Vieira da Silva}
+\IEEEauthorblockA{Processamento de Sinais I\\
+CEFET/RJ}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Este artigo apresenta a modelagem e a analise numerica de arranjos de
+sensores lineares, circulares, planares e cilindricos. Foram implementadas
+funcoes para gerar geometrias tridimensionais, calcular vetores diretores,
+obter fatores de arranjo, estimar beampatterns normalizados e aplicar um
+beamformer convencional do tipo Delay-and-Sum. Os resultados mostram a relacao
+entre numero de sensores, geometria, diretividade, largura de feixe, lobulos
+secundarios e potencia recebida em um enlace direcional.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Arranjos de sensores, vetor diretor, beamforming, beampattern, direcao de
+chegada, transmissao direcional.
+\end{IEEEkeywords}
+
+\section{Introducao}
+Arranjos de sensores exploram diferencas de fase entre elementos separados no
+espaco para estimar direcoes de chegada, reforcar sinais de interesse e atenuar
+interferencias. Essa ideia aparece em radares, sonares, comunicacoes sem fio,
+sistemas acusticos e Massive MIMO, onde o processamento espacial complementa o
+processamento temporal de sinais.
+
+O objetivo deste trabalho e implementar, analisar e comparar quatro geometrias:
+arranjo linear uniforme (ULA), arranjo circular uniforme (UCA), arranjo planar
+uniforme (UPA) e arranjo cilindrico uniforme. Todo o fluxo foi desenvolvido de
+forma reprodutivel: as figuras e tabelas do artigo sao geradas por codigo a
+partir do script principal do repositorio.
+
+\section{Fundamentacao Teorica}
+Um arranjo de sensores e um conjunto de elementos com posicoes conhecidas. Se
+uma onda plana incide sobre o arranjo, cada sensor observa a mesma frente de
+onda com uma defasagem dependente da direcao de propagacao. Essa defasagem e
+descrita pelo vetor diretor, tambem chamado de \emph{steering vector}.
+
+Para sensores em posicoes tridimensionais
+\begin{equation}
+{\bf r}_m = [x_m \; y_m \; z_m]^T,
+\end{equation}
+e direcao definida por azimute $\phi$ e elevacao $\theta$, usa-se
+\begin{equation}
+{\bf u} =
+[\cos\theta\cos\phi \; \cos\theta\sin\phi \; \sin\theta]^T.
+\end{equation}
+Com numero de onda $k=2\pi/\lambda$, o vetor diretor e
+\begin{equation}
+{\bf a}(\theta,\phi) =
+\left[e^{-jk{\bf r}_1^T{\bf u}} \; \cdots \;
+e^{-jk{\bf r}_M^T{\bf u}}\right]^T.
+\end{equation}
+
+O beamforming convencional aplica pesos complexos ${\bf w}$ aos sensores. O
+fator de arranjo e
+\begin{equation}
+AF(\theta,\phi) = {\bf w}^H {\bf a}(\theta,\phi),
+\end{equation}
+e o beampattern normalizado em dB e
+\begin{equation}
+B_{dB}(\theta,\phi) =
+20\log_{10}\left(
+\frac{|AF(\theta,\phi)|}{\max_{\theta,\phi}|AF(\theta,\phi)|}
+\right).
+\end{equation}
+O lobulo principal indica a direcao de maior ganho. Lobulos secundarios
+representam direcoes indesejadas com ganho residual. A largura de feixe de
+meia potencia (HPBW) mede a abertura angular entre os pontos de -3 dB.
+
+\section{Metodologia}
+As funcoes foram implementadas em Python com \texttt{numpy}. A ULA foi
+posicionada no eixo $z$ para que a variacao de elevacao $\theta$ produza o
+corte broadside usual em $-90^\circ \leq \theta \leq 90^\circ$. A UCA foi
+gerada no plano $xy$, a UPA em uma grade retangular no plano $xz$ e o arranjo
+cilindrico por aneis circulares empilhados no eixo $z$.
+
+As coordenadas geradas sao mostradas na Fig.~\ref{fig:geometrias}. Para ULA
+foram avaliados $M=\{9,16\}$ e $d=\lambda/2$. Para UCA foram avaliados
+$M=\{9,16\}$ e $R=\lambda$. Para UPA foram usados arranjos $3\times3$ e
+$4\times4$, com $d_x=d_y=\lambda/2$. Para o cilindrico foram usadas
+combinacoes $M_c=\{9,16\}$, $N_z=\{4,6\}$, $R=\lambda$ e $d_z=\lambda/2$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.48\linewidth]{../figures/geometry_ula.png}
+\includegraphics[width=0.48\linewidth]{../figures/geometry_uca.png}
+\includegraphics[width=0.48\linewidth]{../figures/geometry_upa.png}
+\includegraphics[width=0.48\linewidth]{../figures/geometry_ucya.png}
+\caption{Geometrias tridimensionais implementadas. As posicoes estao
+normalizadas por $\lambda$.}
+\label{fig:geometrias}
+\end{figure}
+
+Nos cortes direcionais de UCA, UPA e cilindrico, foram usados pesos
+Delay-and-Sum apontados para uma direcao de referencia. Essa escolha gera um
+lobulo principal identificavel nos cortes de azimute e elevacao. O caso de
+pesos uniformes e preservado como caso broadside natural para a ULA.
+
+O beamformer convencional foi implementado como
+\begin{equation}
+y[n] = {\bf w}^H{\bf x}[n],
+\end{equation}
+com pesos ${\bf w}={\bf a}(\theta_0,\phi_0)/M$. Essa normalizacao faz o ganho
+maximo de tensao ser unitario na direcao de apontamento.
+
+\section{Resultados}
+A Fig.~\ref{fig:ula} mostra que aumentar o numero de sensores da ULA reduz a
+largura de feixe e torna o lobulo principal mais seletivo. Esse ganho de
+diretividade tem custo: pequenos erros de apontamento passam a causar maior
+perda de potencia.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../figures/beampattern_ula.png}
+\caption{Beampattern da ULA para $M=9$ e $M=16$, com $d=\lambda/2$.}
+\label{fig:ula}
+\end{figure}
+
+A Fig.~\ref{fig:uca} apresenta o corte de azimute da UCA. O arranjo circular
+tem cobertura natural em $360^\circ$ e permite apontamento em qualquer azimute,
+mas a largura do lobulo depende do raio e do numero de elementos. Para o mesmo
+raio, aumentar $M$ melhora a amostragem espacial e reduz artefatos discretos.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../figures/beampattern_uca.png}
+\caption{Beampattern da UCA em azimute, com $R=\lambda$ e apontamento para
+$90^\circ$.}
+\label{fig:uca}
+\end{figure}
+
+Os mapas da UPA sao mostrados na Fig.~\ref{fig:upa}. A geometria planar fornece
+controle simultaneo em azimute e elevacao. O arranjo $4\times4$ apresenta
+lobulo principal mais estreito que o $3\times3$, pois possui maior abertura
+efetiva nas duas dimensoes.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../figures/beampattern_upa_heatmap.png}
+\includegraphics[width=\linewidth]{../figures/beampattern_upa_surface.png}
+\caption{Mapa de calor e superficie tridimensional do ganho para UPA.}
+\label{fig:upa}
+\end{figure}
+
+A Fig.~\ref{fig:ucya} mostra os mapas do arranjo cilindrico. Essa geometria
+combina cobertura azimutal da UCA com resolucao vertical controlada pelo numero
+de aneis. O aumento de $N_z$ reduz a largura de feixe em elevacao, enquanto
+$M_c$ melhora a discretizacao angular ao redor do cilindro.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../figures/beampattern_ucya_heatmap.png}
+\caption{Mapas bidimensionais de ganho do arranjo cilindrico para combinacoes
+de $M_c$ e $N_z$.}
+\label{fig:ucya}
+\end{figure}
+
+\input{generated_results.tex}
+
+\begin{table}[t]
+\caption{Comparacao qualitativa das geometrias.}
+\label{tab:comparativa}
+\centering
+\begin{tabular}{lcccc}
+\hline
+Arranjo & Diret. & Azimute & Elevacao & Complex.\\
+\hline
+ULA & Media & Baixa & Alta no corte & Baixa\\
+UCA & Media & Alta & Baixa & Media\\
+UPA & Alta & Media & Alta & Media\\
+Cil. & Alta & Alta & Alta & Alta\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Transmissao Direcional}
+No experimento de enlace, transmissor e receptor usam ULAs com oito elementos,
+$d=\lambda/2$, $f_c=1$ GHz e apontamento do transmissor
+$\theta_T=20^\circ$. O sinal transmitido foi
+\begin{equation}
+m(t)=\sin(2\pi 500t)+0.5\sin(2\pi 1500t).
+\end{equation}
+
+Com alinhamento perfeito, a potencia recebida normalizada foi
+$\AlignedPower$ e o ganho do enlace foi $\AlignedGain$ dB. A correlacao
+normalizada foi $\AlignedCorr$, pois o modelo em linha de visada sem distorcao
+altera principalmente a escala do sinal. A Fig.~\ref{fig:transmissao} compara
+potencia, ganho e formas de onda recebidas.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../figures/transmission_sweep.png}
+\includegraphics[width=\linewidth]{../figures/transmission_waveforms.png}
+\caption{Potencia recebida, ganho do enlace e formas de onda para o enlace
+direcional com ULA de oito elementos.}
+\label{fig:transmissao}
+\end{figure}
+
+\subsection{Multiplos Sinais}
+Como experimento adicional, foram simuladas duas fontes simultaneas em
+$\theta=-15^\circ$ e $\theta=25^\circ$. A potencia espacial foi estimada por
+varredura convencional, usando a forma quadratica ${\bf w}^H{\bf R}{\bf w}$,
+onde ${\bf R}$ e a matriz de covariancia recebida. A Fig.~\ref{fig:duasfontes}
+mostra que o aumento de sensores de $M=8$ para $M=16$ estreita os picos do
+espectro espacial e melhora a separacao angular. Com poucos sensores, fontes
+proximas tendem a se fundir em um lobulo largo; com mais sensores, a abertura
+maior aumenta a resolucao, mas tambem exige melhor calibracao e controle de
+espacamento.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../figures/two_sources_spatial_spectrum.png}
+\caption{Espectro espacial convencional para duas fontes simultaneas em
+$-15^\circ$ e $25^\circ$.}
+\label{fig:duasfontes}
+\end{figure}
+
+\section{Discussao}
+A potencia recebida e maxima quando transmissor e receptor estao alinhados
+porque as fases induzidas pela propagacao sao compensadas pelos pesos do
+beamformer. Nessa condicao, as contribuicoes dos sensores somam coerentemente.
+Quando ha desalinhamento angular, a soma deixa de ser coerente e parte da
+energia cai em regioes de menor ganho do beampattern.
+
+A relacao entre potencia recebida e beampattern e direta: no modelo adotado, a
+potencia e proporcional ao modulo quadrado do ganho espacial. Por isso, o
+grafico de potencia recebida em funcao de $\theta_R$ segue o mesmo formato do
+beampattern da ULA receptora, mas em escala de potencia.
+
+Arranjos com maior abertura efetiva, como UPA e cilindrico com muitos
+elementos, tendem a ser mais sensiveis a erros de apontamento porque geram
+feixes mais estreitos. Feixes estreitos aumentam diretividade, melhoram
+rejeicao de interferencia e elevam o ganho espacial na direcao desejada. A
+desvantagem e a necessidade de estimacao angular mais precisa, alem de maior
+complexidade de calibracao e controle.
+
+Tambem se observa que a ULA e simples, porem limitada a um corte angular
+principal. A UCA cobre melhor o azimute, mas tem menor controle de elevacao. A
+UPA controla duas dimensoes, enquanto o cilindrico fornece cobertura azimutal
+ampla com resolucao vertical, ao custo do maior numero de sensores e maior
+complexidade computacional.
+
+No caso de multiplas fontes, a separacao angular depende da abertura do arranjo
+e do nivel dos lobulos secundarios. O espacamento $d=\lambda/2$ e uma escolha
+conservadora porque reduz ambiguidades de grade. Espacamentos maiores poderiam
+aumentar a abertura efetiva, mas tambem introduziriam lobulos de grade e falsas
+direcoes de chegada.
+
+\section{Conclusoes}
+O trabalho mostrou como a geometria do arranjo determina a forma do
+beampattern e, consequentemente, a potencia recebida em um enlace direcional.
+A ULA e adequada para analises simples em um plano; a UCA e interessante para
+cobertura azimutal; a UPA oferece controle bidimensional; e o arranjo
+cilindrico combina cobertura em azimute e elevacao. Os resultados confirmam
+que aumentar o numero de sensores melhora a diretividade, mas torna o sistema
+mais sensivel a erros de apontamento.
+
+Todo o material foi organizado para reproducibilidade: os scripts do
+repositorio geram as figuras, tabelas numericas, dados intermediarios e o PDF
+do artigo sem edicao manual dos resultados.
+
+\begin{thebibliography}{1}
+\bibitem{vantrees}
+H. L. Van Trees, \emph{Optimum Array Processing}. New York, NY, USA: Wiley,
+2002.
+
+\bibitem{balanis}
+C. A. Balanis, \emph{Antenna Theory: Analysis and Design}, 4th ed. Hoboken,
+NJ, USA: Wiley, 2016.
+
+\bibitem{stoica}
+P. Stoica and R. Moses, \emph{Spectral Analysis of Signals}. Upper Saddle
+River, NJ, USA: Prentice Hall, 2005.
+
+\bibitem{tse}
+D. Tse and P. Viswanath, \emph{Fundamentals of Wireless Communication}.
+Cambridge, U.K.: Cambridge University Press, 2005.
+\end{thebibliography}
+
+\end{document}
