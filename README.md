@@ -17,6 +17,8 @@ transmissao direcional.
 - Beampatterns normalizados em dB.
 - Beamformer convencional Delay-and-Sum.
 - Experimento de transmissão direcional com ULA transmissora e receptora.
+- Painel ilustrado das aplicações em radar, sonar, comunicações sem fio,
+  sistemas acústicos e Massive MIMO.
 - Figuras e tabelas usadas no artigo.
 - Artigo tecnico em `article/paper.pdf`.
 

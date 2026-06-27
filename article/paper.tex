@@ -1,309 +1,558 @@
-\documentclass[conference]{IEEEtran}
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazilian]{babel}
+\usepackage{newtxtext,newtxmath}
 \usepackage{amsmath}
 \usepackage{graphicx}
-\usepackage{cite}
-\usepackage{url}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{indentfirst}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{placeins}
 
-\title{Modelagem e Analise de Arranjos de Sensores}
-
-\author{
-\IEEEauthorblockN{Gabriel Florencio da Fonseca, Pedro Nicollas Pereira Azevedo Della Torre Bastos, Ricardo Alexandre Vieira da Silva}
-\IEEEauthorblockA{Processamento de Sinais I\\
-CEFET/RJ}
+\geometry{margin=2.6cm}
+\onehalfspacing
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0pt}
+\graphicspath{{../figures/}}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=blue
 }
 
 \begin{document}
-\maketitle
+\pagenumbering{gobble}
 
-\begin{abstract}
-Este artigo apresenta a modelagem e a analise numerica de arranjos de
-sensores lineares, circulares, planares e cilindricos. Foram implementadas
-funcoes para gerar geometrias tridimensionais, calcular vetores diretores,
-obter fatores de arranjo, estimar beampatterns normalizados e aplicar um
-beamformer convencional do tipo Delay-and-Sum. Os resultados mostram a relacao
-entre numero de sensores, geometria, diretividade, largura de feixe, lobulos
-secundarios e potencia recebida em um enlace direcional.
-\end{abstract}
+\begin{titlepage}
+    \centering
+    {\Large \textbf{CENTRO FEDERAL DE EDUCAÇÃO TECNOLÓGICA CELSO\\SUCKOW DA FONSECA}\par}
+    \vspace{0.25cm}
+    {\Large CAMPUS MARACANÃ\par}
+    {\Large ENGENHARIA ELETRÔNICA\par}
+    {\Large PROCESSAMENTO DE SINAIS I\par}
 
-\begin{IEEEkeywords}
-Arranjos de sensores, vetor diretor, beamforming, beampattern, direcao de
-chegada, transmissao direcional.
-\end{IEEEkeywords}
+    \vfill
 
-\section{Introducao}
-Arranjos de sensores exploram diferencas de fase entre elementos separados no
-espaco para estimar direcoes de chegada, reforcar sinais de interesse e atenuar
-interferencias. Essa ideia aparece em radares, sonares, comunicacoes sem fio,
-sistemas acusticos e Massive MIMO, onde o processamento espacial complementa o
-processamento temporal de sinais.
+    {\LARGE \textbf{MODELAGEM E ANÁLISE DE\\ARRANJOS DE SENSORES}\par}
 
-O objetivo deste trabalho e implementar, analisar e comparar quatro geometrias:
-arranjo linear uniforme (ULA), arranjo circular uniforme (UCA), arranjo planar
-uniforme (UPA) e arranjo cilindrico uniforme. Todo o fluxo foi desenvolvido de
-forma reprodutivel: as figuras e tabelas do artigo sao geradas por codigo a
-partir do script principal do repositorio.
+    \vfill
 
-\section{Fundamentacao Teorica}
-Um arranjo de sensores e um conjunto de elementos com posicoes conhecidas. Se
-uma onda plana incide sobre o arranjo, cada sensor observa a mesma frente de
-onda com uma defasagem dependente da direcao de propagacao. Essa defasagem e
-descrita pelo vetor diretor, tambem chamado de \emph{steering vector}.
+    {\large
+    Gabriel Florencio da Fonseca\par
+    Pedro Nicollas Pereira Azevedo Della Torre Bastos\par
+    Ricardo Alexandre Vieira da Silva\par}
 
-Para sensores em posicoes tridimensionais
+    \vfill
+
+    {\large Professor: Rafael S. Chaves\par}
+    \vspace{0.6cm}
+    {\large Rio de Janeiro, Brasil\par}
+    {\large Junho de 2026\par}
+\end{titlepage}
+
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\section*{Resumo}
+Este relatório apresenta a modelagem e a análise de arranjos lineares,
+circulares, planares e cilíndricos de sensores. Foram implementadas funções
+para gerar as geometrias tridimensionais, calcular o vetor diretor, obter o
+fator de arranjo, estimar o \emph{beampattern} normalizado e aplicar um
+\emph{beamformer} convencional do tipo \emph{Delay-and-Sum}. Também foi
+simulado um enlace direcional entre duas ULAs e um cenário com duas fontes
+simultâneas. Os resultados relacionam geometria, número de elementos,
+diretividade, largura de feixe, lóbulos secundários e potência recebida. Por
+fim, são discutidas aplicações em radares, sonares, comunicações sem fio,
+sistemas acústicos e Massive MIMO.
+
+\section*{Objetivos}
+O trabalho teve como objetivo introduzir os fundamentos do processamento
+espacial de sinais por meio da implementação e comparação de diferentes
+arranjos de sensores. Em particular, buscou-se:
+\begin{itemize}
+    \item modelar ULA, UCA, UPA e arranjo cilíndrico em três dimensões;
+    \item implementar o vetor diretor conforme a convenção angular do enunciado;
+    \item calcular e interpretar fatores de arranjo e \emph{beampatterns};
+    \item implementar o \emph{beamforming} convencional;
+    \item avaliar o efeito do número de sensores e da geometria sobre a diretividade;
+    \item relacionar desalinhamento angular, ganho espacial e potência recebida;
+    \item apresentar aplicações práticas do processamento por arranjos.
+\end{itemize}
+
+\section{Introdução}
+Um arranjo de sensores é formado por elementos distribuídos no espaço e
+processados de maneira conjunta. Como uma frente de onda atinge cada elemento
+com uma fase diferente, a posição relativa dos sensores contém informação
+sobre a direção de propagação. O processamento espacial explora essas
+diferenças para reforçar sinais de interesse, atenuar interferências e estimar
+direções de chegada \cite{vantrees,stoica}.
+
+O mesmo princípio aparece em sistemas com naturezas físicas distintas. Em
+radares, arranjos de antenas direcionam eletronicamente o feixe; em sonares,
+hidrofones localizam fontes subaquáticas; em sistemas acústicos, matrizes de
+microfones melhoram a captação de fala; e em redes móveis, múltiplas antenas
+permitem formar feixes para usuários diferentes. Apesar dessas diferenças, o
+modelo matemático baseado em vetor diretor e soma ponderada é essencialmente o
+mesmo \cite{balanis,matlab_phasedarrays}.
+
+Neste trabalho foram analisadas quatro geometrias: arranjo linear uniforme
+(ULA), arranjo circular uniforme (UCA), arranjo planar uniforme (UPA) e arranjo
+cilíndrico uniforme. Todas as figuras e tabelas numéricas foram geradas
+automaticamente pelo código disponibilizado no repositório.
+
+\section{Fundamentação Teórica}
+
+\subsection{Arranjos e processamento espacial}
+Considere um conjunto de $M$ sensores cujas posições tridimensionais são
+descritas por
 \begin{equation}
-{\bf r}_m = [x_m \; y_m \; z_m]^T,
+    \mathbf{r}_m = [x_m\; y_m\; z_m]^T,
+    \qquad m\in\{1,\ldots,M\}.
 \end{equation}
-e direcao definida por azimute $\phi$ e elevacao $\theta$, usa-se
+Para uma onda plana com azimute $\phi$ e elevação $\theta$, o vetor unitário de
+propagação adotado no enunciado é
 \begin{equation}
-{\bf u} =
-[\cos\theta\cos\phi \; \cos\theta\sin\phi \; \sin\theta]^T.
+    \mathbf{u}(\theta,\phi)=
+    [\cos\theta\cos\phi\;
+     \cos\theta\sin\phi\;
+     \sin\theta]^T.
 \end{equation}
-Com numero de onda $k=2\pi/\lambda$, o vetor diretor e
-\begin{equation}
-{\bf a}(\theta,\phi) =
-\left[e^{-jk{\bf r}_1^T{\bf u}} \; \cdots \;
-e^{-jk{\bf r}_M^T{\bf u}}\right]^T.
-\end{equation}
+Com comprimento de onda $\lambda$ e número de onda $k=2\pi/\lambda$, a
+defasagem espacial do sensor $m$ é determinada por $k\mathbf{r}_m^T\mathbf{u}$.
 
-O beamforming convencional aplica pesos complexos ${\bf w}$ aos sensores. O
-fator de arranjo e
+\subsection{Vetor diretor e direção de chegada}
+O vetor diretor reúne as respostas de fase de todos os elementos:
 \begin{equation}
-AF(\theta,\phi) = {\bf w}^H {\bf a}(\theta,\phi),
+    \mathbf{a}(\theta,\phi)=
+    \left[
+    e^{-jk\mathbf{r}_1^T\mathbf{u}}
+    \; e^{-jk\mathbf{r}_2^T\mathbf{u}}
+    \; \cdots \;
+    e^{-jk\mathbf{r}_M^T\mathbf{u}}
+    \right]^T.
 \end{equation}
-e o beampattern normalizado em dB e
+Cada par $(\theta,\phi)$ produz uma assinatura espacial. Técnicas de direção
+de chegada (DoA) comparam o sinal observado com essas assinaturas para estimar
+de onde a onda veio. A resolução depende principalmente da abertura do
+arranjo, do número de sensores, da relação sinal-ruído e da correlação entre as
+fontes \cite{stoica}.
+
+\subsection{Beamforming e beampattern}
+O \emph{beamforming} combina os sinais dos sensores usando pesos complexos
+$\mathbf{w}$. O fator de arranjo é
 \begin{equation}
-B_{dB}(\theta,\phi) =
-20\log_{10}\left(
-\frac{|AF(\theta,\phi)|}{\max_{\theta,\phi}|AF(\theta,\phi)|}
-\right).
+    AF(\theta,\phi)=\mathbf{w}^H\mathbf{a}(\theta,\phi).
 \end{equation}
-O lobulo principal indica a direcao de maior ganho. Lobulos secundarios
-representam direcoes indesejadas com ganho residual. A largura de feixe de
-meia potencia (HPBW) mede a abertura angular entre os pontos de -3 dB.
+No método \emph{Delay-and-Sum}, os pesos compensam a fase da direção desejada,
+de forma que as contribuições cheguem alinhadas ao somador. Para apontamento em
+$(\theta_0,\phi_0)$, foram usados
+\begin{equation}
+    \mathbf{w}=\frac{\mathbf{a}(\theta_0,\phi_0)}{M}.
+\end{equation}
+A normalização por $M$ faz o ganho de tensão ser unitário na direção de
+apontamento. O \emph{beampattern} normalizado é
+\begin{equation}
+    B(\theta,\phi)=
+    \frac{|AF(\theta,\phi)|}
+    {\max_{\theta,\phi}|AF(\theta,\phi)|},
+\end{equation}
+e sua representação em decibéis é
+\begin{equation}
+    B_{dB}(\theta,\phi)=20\log_{10}B(\theta,\phi).
+\end{equation}
+O lóbulo principal indica a região de maior sensibilidade. A largura de feixe
+de meia potência (HPBW) é medida entre os pontos de $-3$ dB. Os lóbulos
+secundários correspondem a direções indesejadas ainda aceitas pelo arranjo
+\cite{matlab_beamforming_intro}.
+
+\section{Aplicações de Arranjos de Sensores}
+A Figura~\ref{fig:aplicacoes} resume as aplicações discutidas nesta seção. A
+ilustração foi gerada pelo próprio projeto para manter a reprodutibilidade dos
+resultados.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.82\textwidth]{applications_overview.png}
+    \caption{Aplicações de processamento espacial em radar, sonar,
+    comunicações sem fio, sistemas acústicos e Massive MIMO.}
+    \label{fig:aplicacoes}
+\end{figure}
+
+\subsection{Radares}
+Radares com arranjos faseados alteram eletronicamente os pesos das antenas para
+varrer o espaço sem movimentar mecanicamente toda a estrutura. Isso permite
+detectar e acompanhar vários alvos, formar nulos na direção de interferências
+e mudar rapidamente a direção de observação. Em radares digitais, diferentes
+feixes podem ser formados a partir das mesmas amostras recebidas
+\cite{matlab_radar,balanis}.
+
+\subsection{Sonares}
+Sonares usam projetores acústicos e hidrofones distribuídos em cascos de
+navios, submarinos, boias ou estruturas rebocadas. No sonar ativo, mede-se o
+eco de um pulso transmitido; no sonar passivo, estima-se a direção de fontes
+sonoras sem transmissão. Arranjos maiores produzem feixes mais estreitos e
+melhor separação angular, mas exigem calibração das posições e compensação da
+velocidade de propagação no meio \cite{urick,vantrees}.
+
+\subsection{Comunicações sem fio}
+Em enlaces sem fio, o \emph{beamforming} concentra energia na direção do
+receptor, melhora a relação sinal-ruído e reduz interferência para outros
+usuários. No receptor, a combinação espacial pode atenuar sinais provenientes
+de direções indesejadas. Em canais com múltiplos percursos, a diversidade
+espacial também reduz a probabilidade de desvanecimento profundo
+\cite{tse,matlab_multichannel}.
+
+\subsection{Sistemas acústicos}
+Matrizes de microfones são usadas em videoconferência, aparelhos auditivos,
+robótica, gravação espacial e reconhecimento de voz. O arranjo reforça a fala
+proveniente da direção desejada e reduz ruído difuso ou fontes concorrentes. A
+geometria pode ser linear, circular, planar ou volumétrica, dependendo da
+cobertura angular necessária.
+
+\subsection{Massive MIMO}
+Massive MIMO emprega dezenas ou centenas de antenas em uma estação rádio-base.
+Além do ganho de arranjo, a estação pode formar feixes distintos para vários
+usuários e transmitir fluxos simultâneos no mesmo intervalo de tempo e faixa
+de frequência. Esse multiplexamento espacial aumenta a eficiência espectral,
+mas exige estimação de canal, sincronismo, calibração e processamento em tempo
+real \cite{marzetta,mpirical_mimo}.
 
 \section{Metodologia}
-As funcoes foram implementadas em Python com \texttt{numpy}. A ULA foi
-posicionada no eixo $z$ para que a variacao de elevacao $\theta$ produza o
-corte broadside usual em $-90^\circ \leq \theta \leq 90^\circ$. A UCA foi
-gerada no plano $xy$, a UPA em uma grade retangular no plano $xz$ e o arranjo
-cilindrico por aneis circulares empilhados no eixo $z$.
+As implementações foram desenvolvidas em Python com NumPy e Matplotlib. As
+funções principais foram separadas por responsabilidade:
+\begin{itemize}
+    \item geometrias: módulos \path{generate_*.py};
+    \item processamento espacial: \path{steering_vector.py},
+    \path{beampattern.py} e \path{beamformer.py}.
+\end{itemize}
+O script \path{main.py} executa os experimentos, gera as figuras, salva os
+dados intermediários e compila este relatório.
 
-As coordenadas geradas sao mostradas na Fig.~\ref{fig:geometrias}. Para ULA
-foram avaliados $M=\{9,16\}$ e $d=\lambda/2$. Para UCA foram avaliados
-$M=\{9,16\}$ e $R=\lambda$. Para UPA foram usados arranjos $3\times3$ e
-$4\times4$, com $d_x=d_y=\lambda/2$. Para o cilindrico foram usadas
-combinacoes $M_c=\{9,16\}$, $N_z=\{4,6\}$, $R=\lambda$ e $d_z=\lambda/2$.
+\subsection{Geometrias}
+A ULA foi posicionada no eixo $z$. Com a convenção angular do enunciado, isso
+faz $\theta=0^\circ$ representar o apontamento \emph{broadside} no corte de
+elevação. A UCA foi construída no plano $xy$, a UPA no plano $xz$ e o arranjo
+cilíndrico por anéis no plano $xy$ empilhados ao longo de $z$.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.48\linewidth]{../figures/geometry_ula.png}
-\includegraphics[width=0.48\linewidth]{../figures/geometry_uca.png}
-\includegraphics[width=0.48\linewidth]{../figures/geometry_upa.png}
-\includegraphics[width=0.48\linewidth]{../figures/geometry_ucya.png}
-\caption{Geometrias tridimensionais implementadas. As posicoes estao
-normalizadas por $\lambda$.}
-\label{fig:geometrias}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.42\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{geometry_ula.png}
+        \caption{ULA com 16 sensores.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.42\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{geometry_uca.png}
+        \caption{UCA com 16 sensores.}
+    \end{subfigure}
+
+    \begin{subfigure}{0.42\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{geometry_upa.png}
+        \caption{UPA $4\times4$.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.42\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{geometry_ucya.png}
+        \caption{Arranjo cilíndrico $16\times6$.}
+    \end{subfigure}
+    \caption{Posições tridimensionais dos sensores, normalizadas por $\lambda$.}
+    \label{fig:geometrias}
 \end{figure}
 
-Nos cortes direcionais de UCA, UPA e cilindrico, foram usados pesos
-Delay-and-Sum apontados para uma direcao de referencia. Essa escolha gera um
-lobulo principal identificavel nos cortes de azimute e elevacao. O caso de
-pesos uniformes e preservado como caso broadside natural para a ULA.
+Foram analisadas as seguintes configurações:
+\begin{itemize}
+    \item ULA: $M\in\{9,16\}$ e $d=\lambda/2$;
+    \item UCA: $M\in\{9,16\}$ e $R=\lambda$;
+    \item UPA: $3\times3$ e $4\times4$, com $d_x=d_y=\lambda/2$;
+    \item cilíndrico: $M_c\in\{9,16\}$, $N_z\in\{4,6\}$,
+    $R=\lambda$ e $d_z=\lambda/2$.
+\end{itemize}
 
-O beamformer convencional foi implementado como
+Para UCA, UPA e arranjo cilíndrico, foram usados pesos Delay-and-Sum apontados
+para uma direção de referência. Sem essa compensação, os pesos uniformes da
+UCA favorecem o eixo perpendicular ao plano e não produzem um lóbulo principal
+azimutal bem definido. O caso de pesos uniformes foi preservado como referência
+\emph{broadside} para a ULA.
+
+\subsection{Transmissão direcional}
+O enlace usa uma ULA transmissora e uma receptora com oito elementos,
+$d=\lambda/2$ e frequência de operação $f_c=1$ GHz. O transmissor aponta para
+$\theta_T=20^\circ$, e o receptor é testado em
 \begin{equation}
-y[n] = {\bf w}^H{\bf x}[n],
+    \theta_R\in\{-90^\circ,-60^\circ,-30^\circ,0^\circ,10^\circ,
+    20^\circ,30^\circ,60^\circ,90^\circ\}.
 \end{equation}
-com pesos ${\bf w}={\bf a}(\theta_0,\phi_0)/M$. Essa normalizacao faz o ganho
-maximo de tensao ser unitario na direcao de apontamento.
+O sinal de mensagem é
+\begin{equation}
+    m(t)=\sin(2\pi500t)+0.5\sin(2\pi1500t).
+\end{equation}
+A potência recebida foi calculada pela média quadrática da forma de onda após
+o ganho espacial. O modelo considera propagação ideal em linha de visada, sem
+ruído aditivo ou distorção de frequência.
+
+\subsection{Múltiplas fontes}
+No experimento adicional, duas fontes incidem sobre uma ULA a
+$-15^\circ$ e $25^\circ$. O espectro espacial convencional é obtido por
+\begin{equation}
+    P(\theta)=\mathbf{w}^H(\theta)\mathbf{R}\mathbf{w}(\theta),
+\end{equation}
+em que $\mathbf{R}$ é a matriz de covariância recebida. Foram comparados
+arranjos com 8 e 16 elementos.
 
 \section{Resultados}
-A Fig.~\ref{fig:ula} mostra que aumentar o numero de sensores da ULA reduz a
-largura de feixe e torna o lobulo principal mais seletivo. Esse ganho de
-diretividade tem custo: pequenos erros de apontamento passam a causar maior
-perda de potencia.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{../figures/beampattern_ula.png}
-\caption{Beampattern da ULA para $M=9$ e $M=16$, com $d=\lambda/2$.}
-\label{fig:ula}
+\subsection{Arranjo Linear Uniforme}
+A Figura~\ref{fig:ula} mostra o corte de elevação da ULA. O lóbulo principal
+fica em $0^\circ$, como esperado para o caso \emph{broadside}. Aumentar o
+número de sensores de 9 para 16 reduz a HPBW de $11{,}34^\circ$ para
+$6{,}35^\circ$. Os níveis máximos de lóbulos secundários permanecem próximos
+de $-13$ dB, valor característico de pesos uniformes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{beampattern_ula.png}
+    \caption{Beampattern da ULA para $M=9$ e $M=16$, com
+    $d=\lambda/2$.}
+    \label{fig:ula}
 \end{figure}
 
-A Fig.~\ref{fig:uca} apresenta o corte de azimute da UCA. O arranjo circular
-tem cobertura natural em $360^\circ$ e permite apontamento em qualquer azimute,
-mas a largura do lobulo depende do raio e do numero de elementos. Para o mesmo
-raio, aumentar $M$ melhora a amostragem espacial e reduz artefatos discretos.
+\subsection{Arranjo Circular Uniforme}
+A UCA foi apontada para $\phi=90^\circ$ no plano horizontal. A
+Figura~\ref{fig:uca} confirma a cobertura azimutal completa. Como o raio foi
+mantido em $R=\lambda$, os casos com 9 e 16 sensores apresentam largura de
+feixe principal semelhante; a principal diferença está na redução de
+artefatos e lóbulos associados à amostragem espacial discreta.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{../figures/beampattern_uca.png}
-\caption{Beampattern da UCA em azimute, com $R=\lambda$ e apontamento para
-$90^\circ$.}
-\label{fig:uca}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{beampattern_uca.png}
+    \caption{Beampattern em azimute da UCA apontada para $90^\circ$.}
+    \label{fig:uca}
 \end{figure}
 
-Os mapas da UPA sao mostrados na Fig.~\ref{fig:upa}. A geometria planar fornece
-controle simultaneo em azimute e elevacao. O arranjo $4\times4$ apresenta
-lobulo principal mais estreito que o $3\times3$, pois possui maior abertura
-efetiva nas duas dimensoes.
+\subsection{Arranjo Planar Uniforme}
+Os mapas da Figura~\ref{fig:upa-mapa} mostram o controle simultâneo em azimute
+e elevação. O arranjo $4\times4$ produz uma região principal mais estreita que
+o $3\times3$, pois possui maior abertura nas duas dimensões.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{../figures/beampattern_upa_heatmap.png}
-\includegraphics[width=\linewidth]{../figures/beampattern_upa_surface.png}
-\caption{Mapa de calor e superficie tridimensional do ganho para UPA.}
-\label{fig:upa}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{beampattern_upa_heatmap.png}
+    \caption{Mapas de calor do ganho para as UPAs $3\times3$ e $4\times4$.}
+    \label{fig:upa-mapa}
 \end{figure}
 
-A Fig.~\ref{fig:ucya} mostra os mapas do arranjo cilindrico. Essa geometria
-combina cobertura azimutal da UCA com resolucao vertical controlada pelo numero
-de aneis. O aumento de $N_z$ reduz a largura de feixe em elevacao, enquanto
-$M_c$ melhora a discretizacao angular ao redor do cilindro.
+A superfície tridimensional da Figura~\ref{fig:upa-superficie} facilita a
+identificação do lóbulo principal, das regiões de nulo e dos lóbulos
+secundários da UPA $4\times4$.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{../figures/beampattern_ucya_heatmap.png}
-\caption{Mapas bidimensionais de ganho do arranjo cilindrico para combinacoes
-de $M_c$ e $N_z$.}
-\label{fig:ucya}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{beampattern_upa_surface.png}
+    \caption{Superfície tridimensional do ganho da UPA $4\times4$.}
+    \label{fig:upa-superficie}
+\end{figure}
+
+\subsection{Arranjo Cilíndrico Uniforme}
+O arranjo cilíndrico combina a cobertura azimutal dos anéis circulares com a
+resolução vertical do empilhamento. Na Figura~\ref{fig:cilindrico}, aumentar
+$N_z$ estreita o feixe em elevação, enquanto aumentar $M_c$ melhora a
+amostragem em azimute. A geometria oferece cobertura ampla, porém apresenta o
+maior custo de sensores e processamento entre os casos estudados.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.94\textwidth]{beampattern_ucya_heatmap.png}
+    \caption{Mapas de ganho do arranjo cilíndrico para diferentes valores de
+    $M_c$ e $N_z$.}
+    \label{fig:cilindrico}
 \end{figure}
 
 \input{generated_results.tex}
 
-\begin{table}[t]
-\caption{Comparacao qualitativa das geometrias.}
-\label{tab:comparativa}
-\centering
-\begin{tabular}{lcccc}
-\hline
-Arranjo & Diret. & Azimute & Elevacao & Complex.\\
-\hline
-ULA & Media & Baixa & Alta no corte & Baixa\\
-UCA & Media & Alta & Baixa & Media\\
-UPA & Alta & Media & Alta & Media\\
-Cil. & Alta & Alta & Alta & Alta\\
-\hline
-\end{tabular}
+\begin{table}[H]
+    \centering
+    \caption{Comparação qualitativa entre as geometrias analisadas.}
+    \label{tab:comparativa}
+    \begin{tabular}{lcccc}
+        \toprule
+        Arranjo & Diretividade & Azimute & Elevação & Complexidade \\
+        \midrule
+        ULA & média & limitada & alta no corte & baixa \\
+        UCA & média & $360^\circ$ & limitada & média \\
+        UPA & alta & direcional & alta & média \\
+        Cilíndrico & alta & $360^\circ$ & alta & alta \\
+        \bottomrule
+    \end{tabular}
 \end{table}
 
-\subsection{Transmissao Direcional}
-No experimento de enlace, transmissor e receptor usam ULAs com oito elementos,
-$d=\lambda/2$, $f_c=1$ GHz e apontamento do transmissor
-$\theta_T=20^\circ$. O sinal transmitido foi
-\begin{equation}
-m(t)=\sin(2\pi 500t)+0.5\sin(2\pi 1500t).
-\end{equation}
+\subsection{Transmissão Direcional}
+Com alinhamento perfeito em $\theta_R=20^\circ$, a potência recebida
+normalizada foi $\AlignedPower$ e o ganho do enlace foi $\AlignedGain$ dB. A
+Figura~\ref{fig:transmissao-varredura} mostra que a potência máxima coincide
+com o apontamento do transmissor. Os nulos e lóbulos laterais seguem o formato
+do \emph{beampattern} da ULA receptora.
 
-Com alinhamento perfeito, a potencia recebida normalizada foi
-$\AlignedPower$ e o ganho do enlace foi $\AlignedGain$ dB. A correlacao
-normalizada foi $\AlignedCorr$, pois o modelo em linha de visada sem distorcao
-altera principalmente a escala do sinal. A Fig.~\ref{fig:transmissao} compara
-potencia, ganho e formas de onda recebidas.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{../figures/transmission_sweep.png}
-\includegraphics[width=\linewidth]{../figures/transmission_waveforms.png}
-\caption{Potencia recebida, ganho do enlace e formas de onda para o enlace
-direcional com ULA de oito elementos.}
-\label{fig:transmissao}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{transmission_sweep.png}
+    \caption{Potência recebida e ganho do enlace em função do apontamento do
+    receptor.}
+    \label{fig:transmissao-varredura}
 \end{figure}
 
-\subsection{Multiplos Sinais}
-Como experimento adicional, foram simuladas duas fontes simultaneas em
-$\theta=-15^\circ$ e $\theta=25^\circ$. A potencia espacial foi estimada por
-varredura convencional, usando a forma quadratica ${\bf w}^H{\bf R}{\bf w}$,
-onde ${\bf R}$ e a matriz de covariancia recebida. A Fig.~\ref{fig:duasfontes}
-mostra que o aumento de sensores de $M=8$ para $M=16$ estreita os picos do
-espectro espacial e melhora a separacao angular. Com poucos sensores, fontes
-proximas tendem a se fundir em um lobulo largo; com mais sensores, a abertura
-maior aumenta a resolucao, mas tambem exige melhor calibracao e controle de
-espacamento.
+No modelo ideal, a recepção altera apenas a amplitude de $m(t)$. Por isso, a
+correlação normalizada permanece igual a um para todos os ângulos com ganho
+não nulo. Na prática, ruído e interferência fariam a correlação cair à medida
+que o desalinhamento reduzisse a relação sinal-ruído.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{../figures/two_sources_spatial_spectrum.png}
-\caption{Espectro espacial convencional para duas fontes simultaneas em
-$-15^\circ$ e $25^\circ$.}
-\label{fig:duasfontes}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{transmission_waveforms.png}
+    \caption{Comparação entre o sinal transmitido, o sinal recebido com
+    alinhamento perfeito e o sinal recebido com $\theta_R=0^\circ$.}
+    \label{fig:transmissao-formas}
 \end{figure}
 
-\section{Discussao}
-A potencia recebida e maxima quando transmissor e receptor estao alinhados
-porque as fases induzidas pela propagacao sao compensadas pelos pesos do
-beamformer. Nessa condicao, as contribuicoes dos sensores somam coerentemente.
-Quando ha desalinhamento angular, a soma deixa de ser coerente e parte da
-energia cai em regioes de menor ganho do beampattern.
+\subsection{Múltiplos Sinais}
+A Figura~\ref{fig:duas-fontes} apresenta dois máximos próximos às direções
+simuladas. O arranjo de 16 elementos produz picos mais estreitos que o de 8
+elementos, confirmando o aumento da resolução angular com a abertura. Se as
+fontes fossem aproximadas além do limite de resolução, os picos se fundiriam e
+a varredura convencional deixaria de separá-las adequadamente.
 
-A relacao entre potencia recebida e beampattern e direta: no modelo adotado, a
-potencia e proporcional ao modulo quadrado do ganho espacial. Por isso, o
-grafico de potencia recebida em funcao de $\theta_R$ segue o mesmo formato do
-beampattern da ULA receptora, mas em escala de potencia.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{two_sources_spatial_spectrum.png}
+    \caption{Espectro espacial convencional para fontes em $-15^\circ$ e
+    $25^\circ$.}
+    \label{fig:duas-fontes}
+\end{figure}
 
-Arranjos com maior abertura efetiva, como UPA e cilindrico com muitos
-elementos, tendem a ser mais sensiveis a erros de apontamento porque geram
-feixes mais estreitos. Feixes estreitos aumentam diretividade, melhoram
-rejeicao de interferencia e elevam o ganho espacial na direcao desejada. A
-desvantagem e a necessidade de estimacao angular mais precisa, alem de maior
-complexidade de calibracao e controle.
+\FloatBarrier
 
-Tambem se observa que a ULA e simples, porem limitada a um corte angular
-principal. A UCA cobre melhor o azimute, mas tem menor controle de elevacao. A
-UPA controla duas dimensoes, enquanto o cilindrico fornece cobertura azimutal
-ampla com resolucao vertical, ao custo do maior numero de sensores e maior
-complexidade computacional.
+\section{Discussão}
+A potência recebida é máxima quando transmissor e receptor estão alinhados
+porque os pesos compensam exatamente as defasagens produzidas pela direção de
+propagação. As contribuições de todos os sensores são somadas coerentemente.
+Quando o receptor aponta para outro ângulo, as fases deixam de coincidir e a
+soma pode sofrer forte cancelamento.
 
-No caso de multiplas fontes, a separacao angular depende da abertura do arranjo
-e do nivel dos lobulos secundarios. O espacamento $d=\lambda/2$ e uma escolha
-conservadora porque reduz ambiguidades de grade. Espacamentos maiores poderiam
-aumentar a abertura efetiva, mas tambem introduziriam lobulos de grade e falsas
-direcoes de chegada.
+O efeito do desalinhamento é determinado pelo \emph{beampattern}: a potência
+recebida é proporcional ao quadrado do módulo do ganho espacial. Dessa forma,
+os máximos, nulos e lóbulos secundários do diagrama aparecem diretamente no
+gráfico de potência do enlace. Um receptor apontado para um lóbulo secundário
+ainda recebe parte do sinal; quando aponta para um nulo, a potência cai várias
+dezenas de decibéis.
 
-\section{Conclusoes}
-O trabalho mostrou como a geometria do arranjo determina a forma do
-beampattern e, consequentemente, a potencia recebida em um enlace direcional.
-A ULA e adequada para analises simples em um plano; a UCA e interessante para
-cobertura azimutal; a UPA oferece controle bidimensional; e o arranjo
-cilindrico combina cobertura em azimute e elevacao. Os resultados confirmam
-que aumentar o numero de sensores melhora a diretividade, mas torna o sistema
-mais sensivel a erros de apontamento.
+A sensibilidade a erros de apontamento cresce com a diretividade. Entre as
+configurações estudadas, os arranjos com maior abertura efetiva e mais
+elementos apresentam feixes mais estreitos. A UPA e o arranjo cilíndrico podem
+ser especialmente sensíveis porque controlam duas dimensões angulares. A ULA
+de 16 elementos também é mais sensível que a de 9 elementos no corte
+analisado.
 
-Todo o material foi organizado para reproducibilidade: os scripts do
-repositorio geram as figuras, tabelas numericas, dados intermediarios e o PDF
-do artigo sem edicao manual dos resultados.
+Feixes estreitos oferecem maior ganho, melhor rejeição de interferência e
+maior reutilização espacial. Em contrapartida, exigem estimativas de DoA mais
+precisas, rastreamento frequente de usuários móveis, maior exatidão de fase e
+amplitude e melhor calibração dos sensores. Esse compromisso aparece tanto em
+radares e sonares quanto em enlaces Massive MIMO.
 
-\begin{thebibliography}{1}
+O espaçamento $d=\lambda/2$ usado nas geometrias lineares e planares evita
+lóbulos de grade no intervalo angular visível. Aumentar o espaçamento poderia
+estreitar o lóbulo principal sem adicionar sensores, porém criaria direções
+ambíguas com ganho elevado. Portanto, número de sensores, abertura física e
+espaçamento devem ser analisados em conjunto.
+
+\section{Conclusão}
+O trabalho demonstrou que a geometria do arranjo determina a cobertura
+angular, a largura de feixe e a capacidade de rejeitar sinais provenientes de
+direções indesejadas. A ULA apresenta implementação simples e boa diretividade
+em um corte; a UCA cobre todo o azimute; a UPA controla azimute e elevação; e o
+arranjo cilíndrico combina cobertura azimutal completa com resolução vertical.
+
+Os experimentos confirmaram que aumentar o número de sensores melhora a
+diretividade e a resolução angular, mas também aumenta custo computacional e
+sensibilidade a erros de apontamento. No enlace direcional, a potência recebida
+seguiu diretamente o \emph{beampattern} do receptor. No caso de duas fontes, o
+arranjo maior separou melhor os picos espaciais.
+
+As aplicações discutidas mostram que o mesmo modelo de vetor diretor e soma
+ponderada pode ser aplicado a ondas eletromagnéticas ou acústicas. Radar,
+sonar, comunicação sem fio, captação de áudio e Massive MIMO diferem no meio de
+propagação e nas escalas físicas, mas compartilham os mesmos princípios de
+processamento espacial.
+
+\renewcommand{\refname}{Referências}
+\begin{thebibliography}{99}
+
 \bibitem{vantrees}
-H. L. Van Trees, \emph{Optimum Array Processing}. New York, NY, USA: Wiley,
-2002.
+H. L. Van Trees, \textit{Optimum Array Processing}. New York, NY, USA:
+Wiley, 2002.
 
 \bibitem{balanis}
-C. A. Balanis, \emph{Antenna Theory: Analysis and Design}, 4th ed. Hoboken,
-NJ, USA: Wiley, 2016.
+C. A. Balanis, \textit{Antenna Theory: Analysis and Design}, 4th ed.
+Hoboken, NJ, USA: Wiley, 2016.
 
 \bibitem{stoica}
-P. Stoica and R. Moses, \emph{Spectral Analysis of Signals}. Upper Saddle
+P. Stoica and R. Moses, \textit{Spectral Analysis of Signals}. Upper Saddle
 River, NJ, USA: Prentice Hall, 2005.
 
 \bibitem{tse}
-D. Tse and P. Viswanath, \emph{Fundamentals of Wireless Communication}.
+D. Tse and P. Viswanath, \textit{Fundamentals of Wireless Communication}.
 Cambridge, U.K.: Cambridge University Press, 2005.
 
+\bibitem{urick}
+R. J. Urick, \textit{Principles of Underwater Sound}, 3rd ed. New York, NY,
+USA: McGraw-Hill, 1983.
+
+\bibitem{marzetta}
+T. L. Marzetta, ``Noncooperative cellular wireless with unlimited numbers of
+base station antennas,'' \textit{IEEE Transactions on Wireless
+Communications}, vol. 9, no. 11, pp. 3590--3600, Nov. 2010.
+
 \bibitem{matlab_phasedarrays}
-MATLAB, \emph{``What Are Phased Arrays?''} YouTube, Nov. 9, 2022. [Online]. Available: https://www.youtube.com/watch?v=9WxWun0E-PM. Accessed: Jun. 27, 2026.
+MATLAB, ``What Are Phased Arrays?,'' YouTube, Nov. 9, 2022. [Online].
+Disponível em: \url{https://www.youtube.com/watch?v=9WxWun0E-PM}.
+Acesso em: 27 jun. 2026.
 
 \bibitem{matlab_beamforming_intro}
-MATLAB, \emph{``An Introduction to Beamforming.''} YouTube, Dec. 27, 2022. [Online]. Available: https://www.youtube.com/watch?v=VOGjHxlisyo. Accessed: Jun. 27, 2026.
+MATLAB, ``An Introduction to Beamforming,'' YouTube, Dec. 27, 2022.
+[Online]. Disponível em:
+\url{https://www.youtube.com/watch?v=VOGjHxlisyo}.
+Acesso em: 27 jun. 2026.
 
 \bibitem{matlab_multichannel}
-MATLAB, \emph{``Why Multichannel Beamforming Is Useful for Wireless Communication.''} YouTube, Jan. 3, 2023. [Online]. Available: https://www.youtube.com/watch?v=8P9Q3Ow4qjY. Accessed: Jun. 27, 2026.
+MATLAB, ``Why Multichannel Beamforming Is Useful for Wireless
+Communication,'' YouTube, Jan. 3, 2023. [Online]. Disponível em:
+\url{https://www.youtube.com/watch?v=8P9Q3Ow4qjY}.
+Acesso em: 27 jun. 2026.
 
 \bibitem{matlab_radar}
-MATLAB, \emph{``Why Digital Beamforming Is Useful for Radar.''} YouTube, Jan. 12, 2023. [Online]. Available: https://www.youtube.com/watch?v=Hb6BhqOgmAI. Accessed: Jun. 27, 2026.
+MATLAB, ``Why Digital Beamforming Is Useful for Radar,'' YouTube,
+Jan. 12, 2023. [Online]. Disponível em:
+\url{https://www.youtube.com/watch?v=Hb6BhqOgmAI}.
+Acesso em: 27 jun. 2026.
 
 \bibitem{mpirical_mimo}
-Mpirical, \emph{``What Is Beamforming (Massive MIMO)? Find Out With Mpirical.''} YouTube, Jan. 4, 2019. [Online]. Available: https://www.youtube.com/watch?v=pE_FsnHtTxc. Accessed: Jun. 27, 2026.
+Mpirical, ``What Is Beamforming (Massive MIMO)? Find Out With Mpirical,''
+YouTube, Jan. 4, 2019. [Online]. Disponível em:
+\url{https://www.youtube.com/watch?v=pE_FsnHtTxc}.
+Acesso em: 27 jun. 2026.
+
 \end{thebibliography}
 
 \end{document}
