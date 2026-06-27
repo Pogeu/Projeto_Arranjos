@@ -123,43 +123,133 @@ representam direcoes indesejadas com ganho residual. A largura de feixe de
 meia potencia (HPBW) mede a abertura angular entre os pontos de -3 dB.
 
 \section{Aplicacoes}
-O processamento espacial de sinais aparece em diferentes sistemas praticos.
-A Figura~\ref{fig:aplicacoes} resume as principais aplicacoes solicitadas no
-trabalho.
+O processamento espacial de sinais aparece em sistemas que precisam distinguir
+direções, concentrar energia ou separar fontes que ocupam simultaneamente o
+mesmo intervalo de frequências. Embora radares, sonares, enlaces de rádio e
+matrizes de microfones trabalhem com meios e faixas de frequência diferentes,
+todos exploram a mesma relação entre geometria, comprimento de onda e diferença
+de fase observada nos sensores. As fotografias e o diagrama desta seção foram
+obtidos de fontes externas; autoria e licença são indicadas nas respectivas
+referências.
+
+\subsection{Radares}
+Em radares de arranjo faseado, o controle da fase aplicada a cada elemento
+permite apontar e varrer o feixe eletronicamente, sem girar mecanicamente toda a
+antena. Essa agilidade possibilita acompanhar vários alvos, alternar rapidamente
+entre busca e rastreamento e formar nulos na direção de interferências. Arranjos
+planares são especialmente úteis porque controlam simultaneamente azimute e
+elevação; aumentar sua abertura reduz a largura do lóbulo principal e melhora a
+resolução angular, ao custo de maior sensibilidade a erros de calibração
+\cite{balanis,matlab_radar}.
+
+Na recepção, os atrasos relativos dos ecos permitem estimar a direção de
+chegada. Na transmissão, os pesos complexos concentram potência na região
+investigada. O radar AN/TPS-59 mostrado na Fig.~\ref{fig:radar} é um exemplo de
+antena de grande abertura empregada em detecção e acompanhamento a longa
+distância.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.82\textwidth]{applications_overview.png}
-\caption{Aplicacoes de processamento espacial em radar, sonar, comunicacoes
-sem fio, sistemas acusticos e Massive MIMO.}
-\label{fig:aplicacoes}
+\includegraphics[width=0.66\textwidth,height=8.0cm,keepaspectratio]{applications/radar_phased_array.jpg}
+\caption{Radar de arranjo faseado AN/TPS-59. Fotografia de Roman Yurek,
+U.S. Marine Corps, em domínio público \cite{img_radar}.}
+\label{fig:radar}
 \end{figure}
 
-\subsection{Radares}
-Em radares, arranjos faseados permitem direcionar e varrer o feixe
-eletronicamente, detectar alvos e formar nulos na direcao de interferencias
-sem movimentar mecanicamente toda a antena \cite{matlab_radar}.
-
 \subsection{Sonares}
-Em sonares, arranjos de hidrofones estimam a direcao de fontes subaquaticas e
-reforcam ecos provenientes de uma regiao de interesse. Arranjos maiores
-produzem feixes mais estreitos e melhor separacao angular \cite{vantrees}.
+O sonar ativo transmite um pulso acústico e mede o eco refletido por um objeto;
+o tempo de ida e volta fornece a distância, como ilustra a
+Fig.~\ref{fig:sonar}. No sonar passivo não há transmissão: um arranjo de
+hidrofones recebe ruídos produzidos por embarcações, animais ou equipamentos e
+estima suas direções de chegada. Em ambos os casos, o beamforming reforça sinais
+de uma região de interesse e reduz ruído e interferência provenientes de outras
+direções \cite{vantrees}.
+
+O projeto do arranjo precisa considerar a menor velocidade do som na água e sua
+variação com temperatura, salinidade e profundidade. ULAs são comuns em
+varreduras laterais, enquanto geometrias circulares e cilíndricas oferecem
+cobertura azimutal mais ampla. Assim como no radar, maior abertura produz feixes
+mais estreitos, mas aumenta as exigências de sincronização e calibração dos
+sensores.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\textwidth,height=7.2cm,keepaspectratio]{applications/sonar_principle.png}
+\caption{Princípio de medição de distância por sonar ativo: emissão do pulso,
+reflexão no alvo e recepção do eco. Diagrama de Georg Wiora, licença CC BY-SA
+3.0 \cite{img_sonar}.}
+\label{fig:sonar}
+\end{figure}
 
 \subsection{Comunicacoes sem fio}
-Em comunicacoes sem fio, o beamforming concentra energia na direcao do usuario
-e reduz interferencia para outros receptores. A combinacao de varios canais
-tambem melhora a recepcao em ambientes com multipercurso
-\cite{matlab_multichannel,tse}.
+Em comunicações sem fio, o beamforming de transmissão concentra energia na
+direção do usuário, elevando a relação sinal-ruído e ampliando a cobertura sem
+exigir o mesmo aumento de potência em todas as direções. Na recepção, a
+combinação coerente dos sinais captados por várias antenas fornece ganho de
+arranjo e pode criar nulos sobre interferentes. Estações rádio-base, enlaces de
+micro-ondas e redes locais usam esse princípio para tornar o uso do espectro
+mais eficiente \cite{matlab_multichannel,tse}.
+
+Ambientes urbanos introduzem multipercurso: réplicas do sinal chegam com
+atrasos, amplitudes e ângulos diferentes. Em vez de tratar todas essas cópias
+apenas como degradação, sistemas com múltiplas antenas podem explorá-las para
+diversidade ou multiplexação espacial. A geometria e o espaçamento devem ser
+escolhidos em função do comprimento de onda para evitar lóbulos de grade e
+manter baixa correlação entre os canais.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.61\textwidth,height=8.0cm,keepaspectratio]{applications/wireless_base_station.jpg}
+\caption{Antenas setoriais de uma estação rádio-base instalada em uma cobertura.
+Fotografia de Hasan Iqbal, licença CC BY 2.0 \cite{img_wireless}.}
+\label{fig:wireless}
+\end{figure}
 
 \subsection{Sistemas acusticos}
-Matrizes de microfones sao usadas para captacao direcional, reconhecimento de
-voz, videoconferencia e supressao de ruido. O mesmo vetor diretor empregado em
-antenas pode ser adaptado para a velocidade de propagacao do som.
+Matrizes de microfones são usadas em videoconferência, reconhecimento de voz,
+aparelhos auditivos, robótica, monitoramento industrial e localização de fontes
+sonoras. Um beamformer Delay-and-Sum compensa os atrasos correspondentes à
+direção desejada antes de somar os canais; a fala de interesse é reforçada,
+enquanto sons não coerentes ou vindos de outros ângulos tendem a ser atenuados
+\cite{vantrees}.
+
+Salas reais apresentam reverberação e fontes móveis, o que torna o problema
+mais difícil do que a propagação ideal por onda plana. Arranjos circulares,
+esféricos ou poliédricos, como o da Fig.~\ref{fig:acustica}, fornecem informação
+espacial em várias direções e podem alimentar algoritmos de separação de fala.
+O vetor diretor mantém a mesma estrutura utilizada em antenas, substituindo-se
+a velocidade de propagação eletromagnética pela velocidade do som.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.68\textwidth,height=7.0cm,keepaspectratio]{applications/acoustic_microphone_array.jpg}
+\caption{Matriz dodecaédrica de microfones usada em separação de sinais de fala.
+Fotografia de Kondo et al., licença CC BY 4.0 \cite{img_acoustic}.}
+\label{fig:acustica}
+\end{figure}
 
 \subsection{Massive MIMO}
-Massive MIMO utiliza dezenas ou centenas de antenas em uma estacao radio-base
-para formar feixes independentes e atender varios usuarios simultaneamente,
-aumentando o ganho espacial e a eficiencia espectral \cite{mpirical_mimo}.
+Massive MIMO amplia o conceito de múltiplas antenas para dezenas ou centenas de
+elementos em uma estação rádio-base. Com estimativas dos canais de cada usuário,
+o sistema calcula pesos diferentes para formar vários feixes no mesmo recurso
+de tempo e frequência. Essa multiplexação espacial permite atender usuários
+simultaneamente, elevar a eficiência espectral e reduzir a potência necessária
+por enlace \cite{mpirical_mimo,matlab_phasedarrays}.
+
+O ganho depende de estimativas de canal precisas, sincronização entre cadeias de
+radiofrequência e calibração do arranjo. Em sistemas TDD, a reciprocidade entre
+os canais de subida e descida pode reduzir a quantidade de sinalização, mas o
+hardware ainda precisa ser calibrado. As antenas ativas 5G mostradas na
+Fig.~\ref{fig:mimo} integram múltiplos elementos, amplificadores e processamento
+digital para realizar esse beamforming em uma unidade compacta.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\textwidth,height=7.4cm,keepaspectratio]{applications/massive_mimo_5g_antennas.jpg}
+\caption{Duas antenas ativas 5G Ericsson instaladas em um sítio de rádio.
+Fotografia de SimplySacha, licença CC BY-SA 4.0 \cite{img_mimo}.}
+\label{fig:mimo}
+\end{figure}
 
 \section{Metodologia}
 As funcoes foram implementadas em Python com \texttt{numpy}. A ULA foi
@@ -416,6 +506,37 @@ Jan. 12, 2023. [Online]. Available:
 Mpirical, \emph{``What Is Beamforming (Massive MIMO)? Find Out With
 Mpirical.''} YouTube, Jan. 4, 2019. [Online]. Available:
 \url{https://www.youtube.com/watch?v=pE_FsnHtTxc}. Accessed: Jun. 27, 2026.
+
+\bibitem{img_radar}
+R. Yurek, \emph{``Phased Array Radar AN/TPS-59.''} Wikimedia Commons,
+Jan. 5, 2010. Public domain. [Online]. Available:
+\url{https://commons.wikimedia.org/wiki/File:Phased_array_radar_AN_TPS-59.jpg}.
+Accessed: Jun. 27, 2026.
+
+\bibitem{img_sonar}
+G. Wiora, \emph{``Sonar Principle EN.''} Wikimedia Commons, Oct. 3, 2005.
+Licensed under CC BY-SA 3.0. [Online]. Available:
+\url{https://commons.wikimedia.org/wiki/File:Sonar_Principle_EN.svg}.
+Accessed: Jun. 27, 2026.
+
+\bibitem{img_wireless}
+H. Iqbal, \emph{``Base Transceiver Station.''} Wikimedia Commons, Apr. 1,
+2016. Licensed under CC BY 2.0. [Online]. Available:
+\url{https://commons.wikimedia.org/wiki/File:Base_Transceiver_Station_(25578073074).jpg}.
+Accessed: Jun. 27, 2026.
+
+\bibitem{img_acoustic}
+K. Kondo, Y. Mizuno, T. Nishino, and K. Takeda, \emph{``Dodecahedral
+Microphone Array (DHMA).''} Wikimedia Commons, Aug. 20, 2012. Licensed under
+CC BY 4.0. [Online]. Available:
+\url{https://commons.wikimedia.org/wiki/File:Dodecahedral-microphone-array-DHMA.jpg}.
+Accessed: Jun. 27, 2026.
+
+\bibitem{img_mimo}
+SimplySacha, \emph{``Antennes actives 5G Ericsson.''} Wikimedia Commons,
+Jun. 26, 2023. Licensed under CC BY-SA 4.0. [Online]. Available:
+\url{https://commons.wikimedia.org/wiki/File:Antennes_actives_5G_Ericsson.jpg}.
+Accessed: Jun. 27, 2026.
 \end{thebibliography}
 
 \end{document}

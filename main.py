@@ -21,7 +21,6 @@ from src import (
     generate_ula,
     generate_upa,
 )
-from src.application_figures import save_application_overview
 from src.metrics import main_lobe_metrics
 from src.transmission import message_signal, simulate_directional_link
 
@@ -451,7 +450,6 @@ def compile_paper(root: Path) -> None:
 def run(root: Path, compile_article: bool = False) -> None:
     ensure_dirs(root)
     geometry_summary = save_geometry_figures(root)
-    save_application_overview(root / "figures" / "applications_overview.png")
     metrics_rows = save_beampattern_figures(root)
     link = save_transmission_results(root)
     save_two_source_results(root)
