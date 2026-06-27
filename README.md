@@ -17,8 +17,8 @@ transmissao direcional.
 - Beampatterns normalizados em dB.
 - Beamformer convencional Delay-and-Sum.
 - Experimento de transmissão direcional com ULA transmissora e receptora.
-- Painel ilustrado das aplicações em radar, sonar, comunicações sem fio,
-  sistemas acústicos e Massive MIMO.
+- Seção de aplicações em radar, sonar, comunicações sem fio, sistemas
+  acústicos e Massive MIMO, com imagens externas creditadas e licenciadas.
 - Figuras e tabelas usadas no artigo.
 - Artigo tecnico em `article/paper.pdf`.
 
@@ -33,6 +33,7 @@ Projeto_Arranjos/
 |-- data/
 |-- examples/
 |-- figures/
+|   |-- applications/
 |-- src/
 |   |-- generate_ula.py
 |   |-- generate_uca.py
