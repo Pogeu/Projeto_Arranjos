@@ -16,11 +16,12 @@ transmissao direcional.
 - Vetor diretor usando a formulação do enunciado.
 - Beampatterns normalizados em dB.
 - Beamformer convencional Delay-and-Sum.
+- Canal de propagação LOS em espaço livre.
 - Experimento de transmissão direcional com ULA transmissora e receptora.
-- Seção de aplicações em radar, sonar, comunicações sem fio, sistemas
-  acústicos e Massive MIMO, com imagens externas creditadas e licenciadas.
+- Painel reprodutível de aplicações em radar, sonar, comunicações sem fio,
+  sistemas acústicos e Massive MIMO, montado com imagens externas creditadas.
 - Figuras e tabelas usadas no artigo.
-- Artigo tecnico em `article/paper.pdf`.
+- Artigo técnico no padrão IEEE Conference, em duas colunas e com 4 páginas.
 
 ## Estrutura
 
@@ -31,6 +32,8 @@ Projeto_Arranjos/
 |   |-- paper.pdf
 |   |-- generated_results.tex
 |-- data/
+|-- docs/
+|   |-- roteiro_apresentacao.md
 |-- examples/
 |-- figures/
 |   |-- applications/
@@ -42,6 +45,8 @@ Projeto_Arranjos/
 |   |-- steering_vector.py
 |   |-- beampattern.py
 |   |-- beamformer.py
+|   |-- channel.py
+|   |-- application_figures.py
 |-- tests/
 |-- main.py
 |-- requirements.txt
@@ -95,7 +100,20 @@ Exemplos independentes:
 ```powershell
 .\.venv\Scripts\python examples\run_single_beampattern.py
 .\.venv\Scripts\python examples\run_transmission_sweep.py
+.\.venv\Scripts\python examples\run_los_channel.py
 ```
+
+As imagens externas usadas no painel estão versionadas em
+`figures/applications/`. Para baixá-las novamente a partir das fontes e
+licenças documentadas:
+
+```powershell
+.\.venv\Scripts\python examples\download_application_images.py
+```
+
+O `main.py` usa esses arquivos para gerar automaticamente
+`figures/applications_overview.png`, que é a única figura de aplicações
+incluída no artigo.
 
 ## Observações de modelagem
 
@@ -111,3 +129,13 @@ Para UCA, UPA e arranjo cilíndrico, os gráficos direcionais usam pesos
 Delay-and-Sum apontados para uma direção de referência. Essa escolha permite
 identificar lobulo principal, lobulos secundarios e largura de feixe nos cortes
 solicitados.
+
+O módulo `src/channel.py` implementa o canal estreito de espaço livre entre
+cada par transmissor-receptor, incluindo atenuação de Friis e fase de
+propagação. O experimento angular utiliza ganho normalizado para isolar o efeito
+do apontamento.
+
+## Apresentação oral
+
+O roteiro de 20 minutos, a divisão entre os integrantes e os comandos da
+demonstração estão em `docs/roteiro_apresentacao.md`.

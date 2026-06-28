@@ -4,7 +4,15 @@ import unittest
 
 import numpy as np
 
-from src import beampattern, beamformer, generate_uca, generate_ucya, generate_ula, generate_upa
+from src import (
+    beampattern,
+    beamformer,
+    free_space_los_channel,
+    generate_uca,
+    generate_ucya,
+    generate_ula,
+    generate_upa,
+)
 from src.steering_vector import steering_vector
 
 
@@ -36,6 +44,15 @@ class ArrayCoreTests(unittest.TestCase):
         x = a[:, None] * samples[None, :]
         y = beamformer(x, positions, (azimuth, elevation), wavelength)
         self.assertTrue(np.allclose(y, samples))
+
+    def test_free_space_los_channel_shape_and_decay(self) -> None:
+        tx = np.array([[0.0, 0.0, 0.0], [0.0, 0.5, 0.0]])
+        rx_near = np.array([[10.0, 0.0, 0.0]])
+        rx_far = np.array([[20.0, 0.0, 0.0]])
+        near = free_space_los_channel(tx, rx_near, 1.0)
+        far = free_space_los_channel(tx, rx_far, 1.0)
+        self.assertEqual(near.shape, (1, 2))
+        self.assertGreater(float(np.mean(np.abs(near))), float(np.mean(np.abs(far))))
 
 
 if __name__ == "__main__":
