@@ -92,17 +92,34 @@ pontos de $-3$ dB, e os lóbulos secundários representam ganho residual em
 direções indesejadas.
 
 \subsection{Aplicações}
-Em radares faseados, pesos eletrônicos varrem o feixe, acompanham alvos e criam
-nulos sem movimentar a antena. Em sonares, arranjos de hidrofones reforçam ecos
-ou fontes passivas e melhoram a resolução angular subaquática. Em comunicações
-sem fio, beamforming aumenta cobertura e reduz interferência, enquanto o
-multipercurso pode ser explorado para diversidade \cite{tse,matlab_radar}.
+\textbf{Radares:} em um radar de arranjo faseado, o processamento espacial
+varre regiões, acompanha alvos e impõe nulos sobre interferências sem movimentar
+a antena. Arranjos planares cobrem azimute e elevação; sua resolução depende da
+abertura e da calibração de fase e amplitude \cite{balanis,matlab_radar}.
 
-Matrizes de microfones realizam captação direcional, localização e separação de
-fala. Massive MIMO estende o princípio para dezenas ou centenas de antenas,
-formando feixes independentes para vários usuários no mesmo recurso de tempo e
-frequência \cite{matlab_multichannel,mpirical_mimo}. A
-Fig.~\ref{fig:aplicacoes} reúne exemplos reais dessas cinco áreas. O painel é
+\textbf{Sonares:} arranjos de hidrofones combinam sinais recebidos em instantes
+diferentes para realçar ecos ativos ou localizar fontes passivas. ULAs oferecem
+resolução em um plano, enquanto geometrias circulares favorecem cobertura de
+$360^\circ$; reflexões e variações da velocidade do som limitam o desempenho.
+
+\textbf{Comunicações sem fio:} o beamforming concentra potência na direção do
+terminal desejado e cria nulos contra interferências. Em estações-base,
+arranjos planares controlam azimute e elevação, e o multipercurso pode fornecer
+diversidade ou multiplexação espacial, desde que o espaçamento evite lóbulos de
+grade e alta correlação entre canais \cite{tse,matlab_multichannel}.
+
+\textbf{Sistemas acústicos:} matrizes de microfones aplicam atrasos e pesos para
+reforçar uma direção, permitindo localizar fontes, captar fala e reduzir ruído.
+Geometrias circulares ampliam a cobertura, mas reverberação e ruído difuso
+reduzem a seletividade em ambientes reais.
+
+\textbf{Massive MIMO:} sistemas Massive MIMO empregam dezenas ou centenas de
+antenas para atender vários usuários no mesmo recurso de tempo e frequência.
+Isso aumenta a eficiência espectral e a separação espacial, mas exige estimativa
+de canal, sincronismo, calibração e processamento confiáveis
+\cite{tse,mpirical_mimo}.
+
+A Fig.~\ref{fig:aplicacoes} reúne exemplos reais dessas cinco áreas. O painel é
 montado automaticamente pelo código a partir das imagens externas creditadas
 nas referências \cite{img_radar,img_sonar,img_wireless,img_acoustic,img_mimo}.
 
