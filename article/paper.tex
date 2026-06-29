@@ -83,8 +83,10 @@ beampattern normalizado são
 AF(\theta,\phi)={\bf w}^H{\bf a}(\theta,\phi),\qquad
 B_{dB}=20\log_{10}\frac{|AF|}{\max |AF|}.
 \end{equation}
-O lóbulo principal indica a direção de maior ganho; a HPBW é a largura entre os
-pontos de $-3$ dB, e os lóbulos secundários representam ganho residual em
+O lóbulo principal indica a direção de maior ganho. A HPBW (do inglês
+\emph{Half-Power Beamwidth}) é sua largura angular entre os pontos de meia
+potência, equivalentes a $-3$ dB. Valores menores indicam feixe mais estreito e
+melhor resolução angular; os lóbulos secundários representam ganho residual em
 direções indesejadas.
 
 \subsection{Aplicações}
@@ -128,6 +130,7 @@ antenas para atender vários usuários no mesmo recurso de tempo e frequência.
 Isso aumenta a eficiência espectral e a separação espacial, mas exige estimativa
 de canal, sincronismo, calibração e processamento confiáveis
 \cite{tse,mpirical_mimo}.
+\FloatBarrier
 
 \section{Metodologia}
 As funções foram implementadas em Python com \texttt{numpy}. A ULA foi
